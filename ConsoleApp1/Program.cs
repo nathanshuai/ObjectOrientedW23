@@ -1,111 +1,208 @@
-﻿// declared variable of Animal type with name fido
-// not yet instantiated or assigned
-Animal fido;
+﻿string sName = "Bob";
+string cName = "Math";
+string iName = "Alex";
 
-Console.WriteLine("What kind of animal is Fido?");
-string animalType = Console.ReadLine();
+School.RegisterStudent(sName,80);
+School.RegisterStudent("Other Person",90);
+School.RegisterStudent("Name Namerson",100);
 
-if(animalType == "dog")
+School.RegisterCourse(cName, 2);
+School.RegisterCourse("Advanced Courses",30);
+
+School.RegisterInstructor(iName, 5000);
+School.RegisterInstructor("david", 6000);
+
+
+Student studentToAdd = School.GetStudent(sName);
+Course courseToAdd = School.GetCourse(cName);
+Instructor instructorToAdd = School.GetInstructor(iName);
+
+School.RegisterStudentForCourse(studentToAdd, courseToAdd);
+School.SettingInstructorForACourse(instructorToAdd, courseToAdd);
+
+
+
+static class School
 {
-    fido = new Dog();
-    // instatiate fido as dog at runtime
-} else {
-    fido = new Cat();
-} 
+    public static string Name { get; } = "MITT";
+    private static HashSet<Course> _courses = new HashSet<Course>();
+    private static HashSet<Student> _students = new HashSet<Student>();
+    private static HashSet<Instructor> _instructors = new HashSet<Instructor>();
 
-
-
-// fido is an instance of its defined class, and counts as an instance of all inherited classes
-Console.WriteLine(fido is Animal);
-Console.WriteLine(fido is Dog);
-Console.WriteLine(fido is Console);
-
-// invoke methods defined on the parent class in the child
-fido.SetName("Fido the Dog");
-fido.GetName();
-
-fido.Limbs = -1;
-Console.WriteLine(fido.Limbs);
-
-List<string> names = new List<string> { "Fido", "Dorothy", "Anyaduba" };
-HashSet<string> nameSet = new HashSet<string> { "Bob", "Brody" };
-
-WriteAll(names);
-WriteAll(nameSet);
-
-void WriteAll(ICollection<string> collection)
-{
-    List<string> newList = new List<string>();
-    foreach (string name in newList)
+    public static void RegisterStudent(string newStudentName, int grades)
     {
-        collection.Add(name);
+        Student newStudent = new Student(newStudentName, grades);
+        _students.Add(newStudent);
+        Console.WriteLine($"Total of {_students.Count} students.");
     }
+
+    public static void RegisterCourse(string courseTitle, int capacity)
+    {
+        Course newCourse = new Course(courseTitle, capacity);
+        _courses.Add(newCourse);
+        Console.WriteLine($"Total of {_courses.Count} courses.");
+    }
+
+    public static void RegisterInstructor(string instructorName, int salary)
+    {
+        Instructor instructor = new Instructor(instructorName, salary);
+        _instructors.Add(instructor);
+        Console.WriteLine($"Total of {_instructors.Count} instructors.");
+
+    }
+    public static void RegisterStudentForCourse(Student student, Course course)
+    {
+        student.SetCourse(course);
+        course.AddStudentToCourse(student);
+        Console.WriteLine($"student  '{student.fullName}' register the {course.Title} courses.");
+    }
+
+    public static void SettingInstructorForACourse(Instructor instructor, Course course)
+    {
+        instructor.techCourse(course);
+        course.AddInstructorToCourse(instructor);
+        Console.WriteLine($"Instructor  '{instructor.fullName}' '{instructor.Salary} salary'is setting on the {course.Title} courses.");
+    }
+
+    public static Student? GetStudent(string studentName)
+    {
+        Student foundStudent = _students.First(s => s.fullName == studentName);
+        return foundStudent;
+    }
+
+    public static Course? GetCourse(string courseName)
+    {
+        Course foundCourse = _courses.First(c => c.Title == courseName);
+        return foundCourse;
+    }
+
+    public static Instructor? GetInstructor(string instructorName)
+    {
+        Instructor foundInstructor = _instructors.FirstOrDefault(i => i.fullName == instructorName);
+        return foundInstructor;
+    }
+
 }
 
-// abstract class, cannot be instantiated
-abstract class Animal
+abstract class person
 {
-    // members: fields and properties
-    // field
-    protected string _name;
+    protected string _fullName;
+    public string fullName { get { return _fullName; } }
 
-    // field exposed by public property
-    private int _limbs;
+    protected Course _course;
 
-    // property that exposes field "_limbs"
-    // default get and set methods
-    public int Limbs { get
+}
+class Student :person
+{
+
+    private int _grade;
+    public int grade { get { return _grade; } set { } }
+
+    
+    public void SetCourse(Course course)
+    {
+        _course = course;
+    }
+
+    public Student(string fullName, int grade)
+    {
+        if (!String.IsNullOrEmpty(fullName))
         {
-            return _limbs;
+            _fullName = fullName;
+        }
+        _grade = grade;
+    }
+}
+// create method for registering an instructor, adding an instructor to a course
+//each course may only have one instructor and create the instructor class(Name)
+
+class Course
+{
+    private string _title;
+    public string Title { get { return _title; } }
+
+    private HashSet<Student> _students = new HashSet<Student>();
+    private Instructor _instructor;
+    private int _capacity;
+    public void AddInstructorToCourse(Instructor instructor)
+    {
+        _instructor = instructor;
+    }
+    public void AddStudentToCourse(Student student)
+    {
+        if (_students.Count < _capacity)
+        {
+            _students.Add(student);
+        }
+        else
+        {
+            Console.WriteLine("Course capacity has been reached. Cannot add more students.");
+        }
+    }
+
+    public void SetGradeForStudent(Student student, int grade)
+    {
+        student.grade= grade;
+    }
+
+    public double GetAverageGrade()
+    {
+        if (_students.Count == 0)
+            return 0.0;
+
+        double sum = 0;
+        foreach (var student in _students)
+        {
+            foreach(var grade in _students)
+
+            sum += student.grade;
+            
         }
 
-        set
+        return sum / (_students.Count);
+    }
+
+    public Course(string title, int capacity)
+    {
+        if (!String.IsNullOrEmpty(title))
         {
-            if(value >= 0)
-            {
-                _limbs = value;
-            }
+            _title = title;
         }
+        _capacity = capacity;
+    }
+}
+class Instructor : person
+{ 
+    private int _salary;
+    public int Salary { get { return _salary; } }   
+
+    public void techCourse(Course course)
+    {
+        _course = course;
     }
 
-    // method (also a member)
-    // [accesor] [return type] [name] ([parameters])
-    // SetName exposes setting _name
-    public void SetName(string newName)
+    public Instructor(string fullName, int salary)
     {
-        if (!String.IsNullOrEmpty(newName))
+        if(!String.IsNullOrEmpty(fullName))
         {
-            _name = newName;
+            _fullName = fullName;
         }
+
+        _salary = salary;
     }
 
-    // method exposes the _name value to get
-    public string GetName()
-    {
-        return _name;
-    }
 }
 
-// concrete class: can be instantiated
-// inherits from abstract class Animal (implements Animal)
 
-abstract class FurryAnimal: Animal
-{
-    public string FurColour { get; set; }
-}
-class Dog : FurryAnimal
-{
-    public void GetTheBall(string colour)
-    {
-        Console.WriteLine($"{_name} runs to get the {colour} ball.");
-    }
-}
+// Students can Enroll in one course
+// Courses can have many students in them
+// These belong to a static School class
+// School has an AddStudentToCourse(Student s, Course c) method defined on it
 
-class Cat : FurryAnimal
-{
-    public void ScratchPost()
-    {
-        Console.WriteLine("You wake up at 3:00 AM to the sound of scratching.");
-    }
-}
-
+//Add Instructors to Courses -- each Course should have one Instructor, and an Instructor may only teach a single Course.
+//Have methods for registering new instructors, and setting the instructor of a course.
+//Instructors should possess a Salary member.
+//Add Grades to Students as members. Create a method for getting the average grade of a course.	
+//Refactor your program to have Instructors and Students inherit from an abstract class,
+//which will possess only the members necessary to all child classes. 
+//Each Course should have a Capacity. When adding students to a Course, it should be ensure that the capacity is not exceeded.
